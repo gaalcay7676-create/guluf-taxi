@@ -1,1 +1,44 @@
 
+name: Build Guluf Taxi APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Extract project
+        run: |
+          mkdir -p flutter_project
+          unzip -o GULUF_Taxi_Android_Project_v2.zip -d flutter_project
+
+      - name: Install dependencies
+        working-directory: flutter_project
+        run: flutter pub get
+
+      - name: Build APK
+        working-directory: flutter_project
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: GULUF-Taxi-APK
+          path: flutter_project/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
